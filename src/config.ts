@@ -4,8 +4,9 @@ export const CONFIG = {
   tagline: 'Spin. Survive. Cash out — or push your luck.',
   rtp: 0.96,
   maxMultiplier: 2500,
-  /** Total-return multipliers (including stake) after surviving stage 1..12. */
-  ladder: [1.1, 1.4, 1.9, 2.7, 4.2, 7, 13, 26, 65, 200, 650, 2500],
+  /** Chance of RED per round (%), then the plateau. The multiplier ladder is DERIVED from this (see math.ts).
+   *  Round 14 is 48.325 so the ladder lands on exactly maxMultiplier at round 18. */
+  odds: { failurePercent: [10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 48.325], plateauFailurePercent: 50 },
   stake: { min: 1, max: 100, presets: [1, 5, 10, 25, 50, 100] },
   startingBalance: 1000, // play money, dollars
   spin: {
@@ -14,5 +15,5 @@ export const CONFIG = {
   },
   // Wheel physics: bump = peg/flapper barrier energy, k = viscous drag, c = dry friction, launch = flick torque range
   physics: { bump: 0.72, k: 1.6, c: 0.4, windup: 6, launchMin: 110, launchMax: 150 },
-  visual: { segments: 6, pegs: 24 },
+  visual: { segments: 1, pegs: 24 } // segments: 1 = one continuous green arc + one red arc; 2+ repeats the pattern,
 } as const;

@@ -1,5 +1,5 @@
 import { CONFIG } from '../config';
-import { growthRatio, multiplierAt, stageSuccessProbabilities } from './math';
+import { LADDER, growthRatio, multiplierAt, stageSuccessProbabilities } from './math';
 
 export type Phase = 'ready' | 'spinning' | 'success' | 'choosing' | 'partial' | 'cashedOut' | 'failed';
 export type Outcome = 'win' | 'loss';
@@ -8,15 +8,17 @@ export type Rng = () => number;
 export interface Run {
   phase: Phase; stake: number; cleared: number; multiplier: number;
   inPlay: number; secured: number; pending: Outcome | null;
+  /** Exact fraction of the stake still riding; inPlay = round(stake * share * multiplier). Avoids compounding cent-rounding. */
+  share: number;
 }
 const PROBS = stageSuccessProbabilities();
-const LAST = CONFIG.ladder.length;
+const LAST = LADDER.length;
 
 export const secureRandom: Rng = () => { // demo-grade only; not for real-money use
   const a = new Uint32Array(2); crypto.getRandomValues(a);
   return (a[0] * 2 ** 21 + (a[1] >>> 11)) / 2 ** 53;
 };
-export const initialRun = (): Run => ({ phase: 'ready', stake: 0, cleared: 0, multiplier: 1, inPlay: 0, secured: 0, pending: null });
+export const initialRun = (): Run => ({ phase: 'ready', stake: 0, cleared: 0, multiplier: 1, inPlay: 0, secured: 0, pending: null, share: 1 });
 export const newRun = (stakeCents: number): Run => {
   const ok = Number.isInteger(stakeCents) && stakeCents >= CONFIG.stake.min * 100 && stakeCents <= CONFIG.stake.max * 100;
   if (!ok) throw new RangeError('Stake out of range');
@@ -35,8 +37,8 @@ export function spin(r: Run, rng: Rng): { run: Run; p: number } {
 export function resolve(r: Run): Run {
   if (r.phase !== 'spinning' || !r.pending) return r;
   if (r.pending === 'loss') return { ...r, phase: 'failed', pending: null, inPlay: 0 };
-  const inPlay = Math.round(r.inPlay * growthRatio(r.cleared)); // ratio of consecutive multipliers
   const cleared = r.cleared + 1;
+  const inPlay = Math.round(r.stake * r.share * multiplierAt(cleared)); // == inPlay x ratio of consecutive multipliers
   const base = { ...r, cleared, multiplier: multiplierAt(cleared), pending: null };
   return cleared === LAST
     ? { ...base, phase: 'cashedOut', inPlay: 0, secured: r.secured + inPlay } // top of ladder: auto collect
@@ -51,7 +53,7 @@ export function cashOut(r: Run, fraction: number): Run {
   if ((r.phase !== 'choosing' && r.phase !== 'partial') || !(fraction > 0) || fraction > 1 || r.inPlay <= 0) return r;
   const take = fraction >= 1 ? r.inPlay : Math.min(r.inPlay, Math.max(1, Math.round(r.inPlay * fraction)));
   const inPlay = r.inPlay - take;
-  return { ...r, secured: r.secured + take, inPlay, phase: inPlay === 0 ? 'cashedOut' : 'choosing' };
+  return { ...r, secured: r.secured + take, inPlay, share: inPlay / (r.stake * r.multiplier), phase: inPlay === 0 ? 'cashedOut' : 'choosing' };
 }
 /** Preview numbers for the UI. */
 export function quote(r: Run, fraction: number) {
@@ -59,5 +61,5 @@ export function quote(r: Run, fraction: number) {
   const secure = fraction >= 1 ? r.inPlay : Math.round(r.inPlay * fraction);
   const remaining = r.inPlay - secure;
   return { total: r.inPlay, secure, remaining, remainingIfSurvive: Math.round(remaining * ratio),
-    nextMultiplier: CONFIG.ladder[r.cleared], nextValue: Math.round(r.inPlay * ratio) };
+    nextMultiplier: LADDER[r.cleared], nextValue: Math.round(r.stake * r.share * LADDER[r.cleared]) };
 }
