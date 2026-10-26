@@ -8,30 +8,32 @@ const btn = (h: string, cls: string) => h.match(new RegExp(`<button[^>]*class="$
 const step = (r: Run, v: number) => acknowledge(resolve(spin(r, () => v).run));
 
 describe('UI states', () => {
-  it('betting: stake selector, Place Bet, Round 1, no tagline/stage/volume slider', () => {
+  it('betting: logo, stake selector, Place Bet, no stats row/tagline', () => {
     const h = html();
-    expect(h).toContain('Place Bet'); expect(h).toContain('Round</span><b>1'); expect(h).toContain('Stake');
-    expect(h).not.toContain('Spin. Survive'); expect(h).not.toContain('Stage'); expect(h).not.toContain('New Run'); expect(h).not.toContain('Volume');
+    expect(h).toContain('class="logo"'); expect(h).toContain('Place Bet'); expect(h).toContain('Stake');
+    for (const t of ['Spin. Survive', 'Game status', 'Round', 'Multiplier', 'Safe chance', 'New Run']) expect(h).not.toContain(t);
     expect(h).toContain('aria-label="How to play"'); expect(h).toMatch(/aria-label="Turn sound (on|off)"/);
   });
   it('spinning: both actions disabled', () => {
     const h = html(spin(newRun(1000), () => 0).run);
     expect(btn(h, 'big spin')).toContain('disabled'); expect(btn(h, 'big cash')).toContain('disabled'); expect(h).toContain('Spinning');
   });
-  it('choosing: both enabled with next payout and cash-out amount; secured hidden until used', () => {
-    const r = step(newRun(1000), 0), h = html(r);
+  it('choosing: both enabled, amounts on the buttons, no separate cash-out-part link', () => {
+    const h = html(step(newRun(1000), 0));
     expect(btn(h, 'big spin')).not.toContain('disabled'); expect(btn(h, 'big cash')).not.toContain('disabled');
-    expect(h).toContain('Spin Again'); expect(h).toContain('Cash Out'); expect(h).toContain('Cash out part'); expect(h).not.toContain('Secured');
-    expect(h).toContain('$10.67'); expect(h).toContain('Round</span><b>2');
+    expect(h).toContain('Spin Again'); expect(h).toContain('Cash Out'); expect(h).toContain('$10.67'); expect(h).toContain('$12.26');
+    expect(h).not.toContain('Cash out part');
   });
-  it('partial sheet shows secure / keep amounts; Secured appears afterwards', () => {
-    const r = step(newRun(1000), 0);
-    expect(html(openPartial(r))).toContain('Secure $5.34');
-    expect(html(cashOut(r, 0.5))).toContain('Secured');
+  it('cash-out sheet offers cash out all plus a partial amount', () => {
+    const h = html(openPartial(step(newRun(1000), 0)));
+    expect(h).toContain('role="dialog"'); expect(h).toContain('Cash out all'); expect(h).toContain('Secure $5.34');
   });
-  it('results offer Play Again (never New Run)', () => {
+  it('results: LOST / CASHED OUT / WON with the amount and Play Again', () => {
     const lost = html(resolve(spin(newRun(1000), () => 0.9999).run)), won = html(cashOut(step(newRun(1000), 0), 1));
-    for (const h of [lost, won]) { expect(h).toContain('Play Again'); expect(h).not.toContain('New Run'); }
-    expect(lost).toContain('You lost'); expect(won).toContain('You cashed out'); expect(won).toContain('Net +$0.67');
+    let top = newRun(1000); for (let i = 0; i < 18; i++) top = step(top, 0);
+    for (const h of [lost, won, html(top)]) { expect(h).toContain('Play Again'); expect(h).not.toContain('New Run'); }
+    expect(lost).toContain('LOST'); expect(lost).toContain('$10.00');
+    expect(won).toContain('CASHED OUT'); expect(won).toContain('$10.67');
+    expect(html(top)).toContain('WON'); expect(html(top)).toContain('$25,000.00');
   });
 });

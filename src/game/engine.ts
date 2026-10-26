@@ -10,6 +10,8 @@ export interface Run {
   inPlay: number; secured: number; pending: Outcome | null;
   /** Exact fraction of the stake still riding; inPlay = round(stake * share * multiplier). Avoids compounding cent-rounding. */
   share: number;
+  /** Money lost on the failing spin (display only). */
+  forfeited: number;
 }
 const PROBS = stageSuccessProbabilities();
 const LAST = LADDER.length;
@@ -18,7 +20,7 @@ export const secureRandom: Rng = () => { // demo-grade only; not for real-money 
   const a = new Uint32Array(2); crypto.getRandomValues(a);
   return (a[0] * 2 ** 21 + (a[1] >>> 11)) / 2 ** 53;
 };
-export const initialRun = (): Run => ({ phase: 'ready', stake: 0, cleared: 0, multiplier: 1, inPlay: 0, secured: 0, pending: null, share: 1 });
+export const initialRun = (): Run => ({ phase: 'ready', stake: 0, cleared: 0, multiplier: 1, inPlay: 0, secured: 0, pending: null, share: 1, forfeited: 0 });
 export const newRun = (stakeCents: number): Run => {
   const ok = Number.isInteger(stakeCents) && stakeCents >= CONFIG.stake.min * 100 && stakeCents <= CONFIG.stake.max * 100;
   if (!ok) throw new RangeError('Stake out of range');
@@ -36,7 +38,7 @@ export function spin(r: Run, rng: Rng): { run: Run; p: number } {
 /** Applies the predetermined outcome once the wheel has settled. */
 export function resolve(r: Run): Run {
   if (r.phase !== 'spinning' || !r.pending) return r;
-  if (r.pending === 'loss') return { ...r, phase: 'failed', pending: null, inPlay: 0 };
+  if (r.pending === 'loss') return { ...r, phase: 'failed', pending: null, inPlay: 0, forfeited: r.inPlay };
   const cleared = r.cleared + 1;
   const inPlay = Math.round(r.stake * r.share * multiplierAt(cleared)); // == inPlay x ratio of consecutive multipliers
   const base = { ...r, cleared, multiplier: multiplierAt(cleared), pending: null };

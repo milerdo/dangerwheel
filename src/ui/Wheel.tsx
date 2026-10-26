@@ -5,7 +5,7 @@ import { flapAt, pegModel, pegsCrossed, planSpin, type PegModel } from '../game/
 
 export interface SpinRequest { id: number; outcome: Outcome }
 interface Props { p: number; spin: SpinRequest | null; onSettled: (id: number) => void; onTick: () => void }
-const geo = (w: number) => { const R = w * 0.47, rB = R - w * 0.09; return { c: w / 2, R, rB, rF: rB - w * 0.014, hub: w * 0.07 }; };
+const geo = (w: number) => { const R = w * 0.44, rB = R - w * 0.09; return { c: w / 2, R, rB, rF: rB - w * 0.014, hub: w * 0.07 }; };
 const layer = (w: number) => { const e = document.createElement('canvas'); e.width = e.height = w; return e; };
 
 export function Wheel({ p, spin, onSettled, onTick }: Props) {
@@ -35,7 +35,7 @@ export function Wheel({ p, spin, onSettled, onTick }: Props) {
       }
       b.fillStyle = '#060506'; b.beginPath(); b.arc(c, c, rB, 0, TAU); b.fill(); // recess
       f.save(); f.beginPath(); f.arc(c, c, rF, 0, TAU); f.clip();
-      const sh = f.createRadialGradient(c, c, rF * 0.78, c, c, rF); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,.7)'); f.fillStyle = sh; f.fillRect(0, 0, w, w);
+      const sh = f.createRadialGradient(c, c, rF * 0.78, c, c, rF); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,.5)'); f.fillStyle = sh; f.fillRect(0, 0, w, w);
       const gl = f.createLinearGradient(c - rF * .8, c - rF * .9, c + rF * .3, c + rF * .3); gl.addColorStop(0, 'rgba(255,255,255,.2)'); gl.addColorStop(.45, 'rgba(255,255,255,.05)'); gl.addColorStop(.5, 'rgba(255,255,255,0)');
       f.fillStyle = gl; f.beginPath(); f.ellipse(c - rF * .22, c - rF * .3, rF * .85, rF * .6, -0.6, 0, TAU); f.fill(); f.restore();
       f.strokeStyle = 'rgba(255,255,255,.22)'; f.lineWidth = w * 0.003; f.beginPath(); f.arc(c, c, rF + w * 0.004, Math.PI * 1.05, Math.PI * 1.45); f.stroke();
@@ -43,7 +43,7 @@ export function Wheel({ p, spin, onSettled, onTick }: Props) {
     const face = (th: number) => {
       const w = el.width, { c, rF, hub } = geo(w), m = s.model;
       const mk = (a: string, b: string, d: string) => { const g = ctx.createRadialGradient(c, c, hub, c, c, rF); g.addColorStop(0, a); g.addColorStop(.72, b); g.addColorStop(1, d); return g; };
-      const safe = mk('#23b862', '#13803f', '#0a5a2b'), bad = mk('#b3192a', '#86101c', '#4e060e');
+      const safe = mk('#23b862', '#13803f', '#0a5a2b'), bad = mk('#c3202f', '#9a1422', '#6f0c18');
       const A = arcs(s.p);
       for (const a of A) { ctx.beginPath(); ctx.moveTo(c, c); ctx.arc(c, c, rF + 2, a.start + th, a.end + th); ctx.closePath(); ctx.fillStyle = a.safe ? safe : bad; ctx.fill(); }
       for (const a of A) { // steel divider strips
@@ -65,7 +65,7 @@ export function Wheel({ p, spin, onSettled, onTick }: Props) {
     const draw = (now: number) => {
       const w = el.width; if (!w) return; const { c, R, rF } = geo(w);
       ctx.clearRect(0, 0, w, w);
-      if (s.glow) { const age = (now - s.glow.t0) / 1500; if (age < 1) { const a = (1 - age) ** 2, g = ctx.createRadialGradient(c, c, R * .95, c, c, R * 1.16), col = s.glow.win ? '47,224,131' : '255,50,64'; g.addColorStop(0, `rgba(${col},${a * .6})`); g.addColorStop(1, `rgba(${col},0)`); ctx.fillStyle = g; ctx.fillRect(0, 0, w, w); } }
+      if (s.glow) { const age = (now - s.glow.t0) / 1800; if (age < 1) { const a = (1 - age) ** 1.6, col = s.glow.win ? '47,224,131' : '255,50,64', g = ctx.createRadialGradient(c, c, R * .96, c, c, w * .5); g.addColorStop(0, `rgba(${col},${Math.min(1, a * .95)})`); g.addColorStop(.35, `rgba(${col},${a * .5})`); g.addColorStop(1, `rgba(${col},0)`); ctx.fillStyle = g; ctx.fillRect(0, 0, w, w); } } // radius ends at the canvas edge, so it never gets cut flat
       ctx.drawImage(back, 0, 0);
       ctx.save(); ctx.beginPath(); ctx.arc(c, c, rF, 0, TAU); ctx.clip();
       const d = s.theta - s.prev, n = Math.min(8, Math.max(1, Math.ceil(Math.abs(d) / 0.06)));
@@ -92,7 +92,7 @@ export function Wheel({ p, spin, onSettled, onTick }: Props) {
       model();
       if (Math.abs(s.theta - s.prev) > 1e-5) s.dir = Math.sign(s.theta - s.prev);
       s.flap += ((s.plan ? flapAt(s.model, s.theta) : 0) - s.flap) * 0.6; if (s.flap > 0.01) more = true;
-      if (s.glow && now - s.glow.t0 < 1500) more = true;
+      if (s.glow && now - s.glow.t0 < 1800) more = true;
       draw(now); if (more) s.raf = requestAnimationFrame(loop);
     };
     kick.current = () => { if (!s.raf) s.raf = requestAnimationFrame(loop); };

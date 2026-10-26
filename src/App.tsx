@@ -6,9 +6,6 @@ import { Wheel, type SpinRequest } from './ui/Wheel';
 import * as audio from './ui/audio';
 
 const money = (c: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c / 100);
-const mult = (m: number) => `${m.toLocaleString('en-US', { maximumFractionDigits: m < 10 ? 2 : m < 1000 ? 1 : 0 })}×`;
-const pct = (p: number) => `${+(p * 100).toFixed(1)}%`;
-const net = (c: number) => (c >= 0 ? '+' : '−') + money(Math.abs(c));
 const svg = { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
 const SoundOn = () => <svg {...svg}><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /></svg>;
 const SoundOff = () => <svg {...svg}><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M17 9l5 6M22 9l-5 6" /></svg>;
@@ -23,6 +20,7 @@ export function App({ initial }: { initial?: Run }) {
   const [req, setReq] = useState<SpinRequest | null>(null);
   const [muted, setMuted] = useState(false);
   const [help, setHelp] = useState(false);
+  const [logoOk, setLogoOk] = useState(true);
   const idRef = useRef(0), timer = useRef<number>(0), helpBtn = useRef<HTMLButtonElement>(null);
   const commit = (r: Run) => { runRef.current = r; setRun(r); };
   const closeHelp = () => { setHelp(false); helpBtn.current?.focus(); };
@@ -64,14 +62,13 @@ export function App({ initial }: { initial?: Run }) {
   const choosing = phase === 'choosing', partial = phase === 'partial', spinning = phase === 'spinning';
   const live = !ready && !finished;
   const q = live ? quote(run, fraction) : null, qAll = live ? quote(run, 1) : null;
-  const round = ready ? 1 : phase === 'failed' ? run.cleared + 1 : phase === 'cashedOut' ? Math.max(1, run.cleared) : run.cleared + 1;
   const pSafe = successChance(Math.min(run.cleared, LADDER.length - 1));
   const stakeC = stake * 100;
 
   return (
     <main className="app">
       <header>
-        <h1>{CONFIG.title}</h1>
+        <h1>{logoOk ? <img className="logo" src={`${import.meta.env.BASE_URL}${CONFIG.logo}`} alt={CONFIG.title} onError={() => setLogoOk(false)} /> : CONFIG.title}</h1>
         <div className="tools">
           <span className="bal" aria-label={`Balance ${money(balance)}`}>{money(balance)}</span>
           <button className="icon" aria-label={muted ? 'Turn sound on' : 'Turn sound off'} aria-pressed={!muted} onClick={() => setMuted((m) => !m)}>{muted ? <SoundOff /> : <SoundOn />}</button>
@@ -80,13 +77,6 @@ export function App({ initial }: { initial?: Run }) {
       </header>
 
       <section className="stage"><Wheel p={pSafe} spin={req} onSettled={settled} onTick={audio.tick} /></section>
-
-      <section className="stats" aria-label="Game status">
-        <div><span>Round</span><b>{round}</b></div>
-        <div><span>Multiplier</span><b>{mult(run.multiplier)}</b></div>
-        <div><span>Safe chance</span><b>{finished ? '—' : pct(pSafe)}</b></div>
-        {run.secured > 0 && <div className="sec"><span>Secured</span><b>{money(run.secured)}</b></div>}
-      </section>
 
       <section className="actions">
         {ready && (
@@ -103,26 +93,28 @@ export function App({ initial }: { initial?: Run }) {
               <button className="big spin" disabled={!choosing} onClick={spinAgain} aria-label={`Spin again. Pays ${money(qAll.nextValue)} if safe`}>
                 <span className="t">Spin Again</span><span className="s">{spinning ? 'Spinning…' : `Win ${money(qAll.nextValue)}`}</span>
               </button>
-              <button className="big cash" disabled={!choosing} onClick={() => take(1)} aria-label={`Cash out ${money(qAll.total)}`}>
+              <button className="big cash" disabled={!choosing} onClick={() => commit(openPartial(run))} aria-label={`Cash out. Choose how much to collect, up to ${money(qAll.total)}`} aria-haspopup="dialog">
                 <span className="t">Cash Out</span><span className="s">{spinning ? '—' : money(qAll.total)}</span>
               </button>
             </div>
-            <button className="link part" style={{ visibility: choosing ? 'visible' : 'hidden' }} tabIndex={choosing ? 0 : -1} onClick={() => commit(openPartial(run))}>Cash out part…</button>
           </>
         )}
         {finished && (
           <div className={`panel result ${phase}`} role="status">
-            <h2>{phase === 'failed' ? 'You lost' : 'You cashed out'}</h2>
-            <p>{phase === 'failed' ? (run.secured > 0 ? `Your secured ${money(run.secured)} is safe.` : `The wheel took your ${money(run.stake)} stake.`) : `${money(run.secured)} collected from a ${money(run.stake)} stake.`}</p>
-            <p className="net">Net {net(run.secured - run.stake)}</p>
+            <h2>{phase === 'failed' ? 'LOST' : run.cleared === LADDER.length ? 'WON' : 'CASHED OUT'}</h2>
+            <p className="amt">{money(phase === 'failed' ? run.forfeited : run.secured)}</p>
+            {phase === 'failed' && run.secured > 0 && <p className="note">Your secured {money(run.secured)} is safe.</p>}
             <button className="primary" onClick={playAgain} autoFocus>Play Again</button>
           </div>
         )}
       </section>
 
-      {partial && q && (
+      {partial && q && qAll && (
         <div className="backdrop end" onClick={() => commit(closePartial(run))}>
-          <div className="sheet" role="dialog" aria-modal="true" aria-label="Cash out part" onClick={(e) => e.stopPropagation()}>
+          <div className="sheet" role="dialog" aria-modal="true" aria-label="Cash out" onClick={(e) => e.stopPropagation()}>
+            <div className="sheethead"><h2>Cash out</h2><button className="link" onClick={() => commit(closePartial(run))}>Back</button></div>
+            <button className="big cash wide" onClick={() => take(1)} autoFocus><span className="t">Cash out all</span><span className="s">{money(qAll.total)}</span></button>
+            <p className="or">Or secure part and keep spinning</p>
             <div className="chips">{[0.25, 0.5, 0.75].map((f) => <button key={f} className={f === fraction ? 'on' : ''} aria-pressed={f === fraction} onClick={() => setFraction(f)}>{f * 100}%</button>)}</div>
             <input type="range" min={5} max={95} value={Math.round(fraction * 100)} onChange={(e) => setFraction(+e.target.value / 100)} aria-label="Share to secure" />
             <dl>
@@ -130,7 +122,7 @@ export function App({ initial }: { initial?: Run }) {
               <dt>Keep in play</dt><dd className="risk">{money(q.remaining)}</dd>
               <dt>Keep-in-play value if next spin is safe</dt><dd>{money(q.remainingIfSurvive)}</dd>
             </dl>
-            <div className="row"><button onClick={() => commit(closePartial(run))}>Back</button><button className="primary" onClick={() => take(fraction)} autoFocus>Secure {money(q.secure)}</button></div>
+            <button className="big cash" onClick={() => take(fraction)}><span className="t">Secure {money(q.secure)}</span><span className="s">and keep spinning</span></button>
           </div>
         </div>
       )}

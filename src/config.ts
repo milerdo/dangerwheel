@@ -1,6 +1,7 @@
 // Single place for title, math, stakes, animation and visual tuning.
 export const CONFIG = {
   title: 'Danger Wheel', // may become "Murphy's Law" / "Murphy's Wheel"
+  logo: 'logo.png', // put your file in /public (png/svg/webp); falls back to the title text if missing
   tagline: 'Spin. Survive. Cash out — or push your luck.',
   rtp: 0.96,
   maxMultiplier: 2500,
