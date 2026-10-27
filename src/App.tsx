@@ -6,7 +6,7 @@ import { Wheel, type SpinRequest } from './ui/Wheel';
 import * as audio from './ui/audio';
 
 const money = (c: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(c / 100);
-const svg = { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
+const svg = { viewBox: '0 0 24 24', width: 24, height: 24, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': true } as const;
 const SoundOn = () => <svg {...svg}><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /></svg>;
 const SoundOff = () => <svg {...svg}><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M17 9l5 6M22 9l-5 6" /></svg>;
 
@@ -44,6 +44,18 @@ export function App({ initial }: { initial?: Run }) {
     audio.unlock(); setBalance((b) => b - c); doSpin(newRun(c));
   };
   const spinAgain = () => { if (runRef.current.phase === 'choosing') { audio.unlock(); doSpin(runRef.current); } };
+  useEffect(() => {
+  const k = (e: KeyboardEvent) => {
+    if (e.code !== 'Space' || e.repeat || help) return;
+    const t = e.target as HTMLElement;
+    if (t.closest('input,textarea,[role=dialog]')) return;                     // sliders and sheets keep their own Space
+    if (t instanceof HTMLButtonElement && !t.matches('.go,.big.spin')) return; // Space on Cash Out, chips and icons still clicks them
+    const r = runRef.current;
+    if (r.phase === 'ready') { e.preventDefault(); start(); }
+    else if (r.phase === 'choosing') { e.preventDefault(); spinAgain(); }
+  };
+  window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
+});
   const settled = (id: number) => {
     if (id !== idRef.current || runRef.current.phase !== 'spinning') return;
     const before = runRef.current, r = resolve(before);
@@ -72,7 +84,7 @@ export function App({ initial }: { initial?: Run }) {
         <div className="tools">
           <span className="bal" aria-label={`Balance ${money(balance)}`}>{money(balance)}</span>
           <button className="icon" aria-label={muted ? 'Turn sound on' : 'Turn sound off'} aria-pressed={!muted} onClick={() => setMuted((m) => !m)}>{muted ? <SoundOff /> : <SoundOn />}</button>
-          <button className="icon" ref={helpBtn} aria-label="How to play" aria-haspopup="dialog" onClick={() => setHelp(true)}>?</button>
+          <button className="icon text" ref={helpBtn} aria-haspopup="dialog" onClick={() => setHelp(true)}>Help</button>
         </div>
       </header>
 

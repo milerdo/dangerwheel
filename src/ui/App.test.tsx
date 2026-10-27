@@ -12,7 +12,7 @@ describe('UI states', () => {
     const h = html();
     expect(h).toContain('class="logo"'); expect(h).toContain('Place Bet'); expect(h).toContain('Stake');
     for (const t of ['Spin. Survive', 'Game status', 'Round', 'Multiplier', 'Safe chance', 'New Run']) expect(h).not.toContain(t);
-    expect(h).toContain('aria-label="How to play"'); expect(h).toMatch(/aria-label="Turn sound (on|off)"/);
+    expect(h).toContain('>Help</button>'); expect(h).toMatch(/aria-label="Turn sound (on|off)"/);
   });
   it('spinning: both actions disabled', () => {
     const h = html(spin(newRun(1000), () => 0).run);
