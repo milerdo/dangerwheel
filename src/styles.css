@@ -45,3 +45,19 @@ input[type=range]{width:100%;accent-color:var(--brass);margin:0;min-height:28px}
 .ok{color:var(--safe)}.risk{color:var(--danger)}
 @media (max-width:340px){.big{padding:8px 4px}.big .t{font-size:17px}.big .s{font-size:12px}.bal{padding:8px}.app{padding-inline:8px}.icon{width:40px;height:40px}.icon.text{padding:0 12px;font-size:14px}.bal{font-size:13px;padding:8px 10px}}
 @media (prefers-reduced-motion:reduce){.big{transition:none}}
+
+/* Hover. Mouse only, so touch screens don't get a "stuck" hover after a tap */
+.icon,.chips button,.primary,.link{transition:background .15s,border-color .15s,color .15s,filter .15s}
+.big{transition:transform .12s,filter .15s,box-shadow .15s}
+@media (hover:hover){
+  .icon:hover,.icon[aria-pressed=false]:hover{border-color:var(--brass);color:var(--brass);background:#272130}
+  .chips button:hover{border-color:var(--brass);background:#2b2633}
+  .chips button.on:hover{background:#2f2a22}
+  .primary:hover:not(:disabled){filter:brightness(1.1)}
+  .link:hover{color:#ecd08f}
+  .big:hover:not(:disabled){filter:brightness(1.1) saturate(1.05);transform:translateY(-1px)}
+  .big.spin:hover:not(:disabled){box-shadow:0 6px 20px rgba(31,191,106,.35)}
+  .big.cash:hover:not(:disabled){box-shadow:0 6px 20px rgba(201,164,92,.35)}
+}
+.big:active:not(:disabled){transform:translateY(1px) scale(.99)}
+@media (prefers-reduced-motion:reduce){.icon,.chips button,.primary,.link,.big{transition:none}.big:hover:not(:disabled){transform:none}}

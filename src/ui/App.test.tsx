@@ -32,7 +32,7 @@ describe('UI states', () => {
     const lost = html(resolve(spin(newRun(1000), () => 0.9999).run)), won = html(cashOut(step(newRun(1000), 0), 1));
     let top = newRun(1000); for (let i = 0; i < 18; i++) top = step(top, 0);
     for (const h of [lost, won, html(top)]) { expect(h).toContain('Play Again'); expect(h).not.toContain('New Run'); }
-    expect(lost).toContain('LOST'); expect(lost).toContain('$10.00');
+    expect(lost).toContain('GAME OVER'); expect(lost).toContain('$0.00'); expect(lost).toContain('collected');
     expect(won).toContain('CASHED OUT'); expect(won).toContain('$10.67');
     expect(html(top)).toContain('WON'); expect(html(top)).toContain('$25,000.00');
   });

@@ -22,7 +22,7 @@ export function Wheel({ p, spin, onSettled, onTick }: Props) {
       const { c, R, rB, rF } = geo(w); back = layer(w); front = layer(w);
       const b = back.getContext('2d')!, f = front.getContext('2d')!;
       b.save(); b.shadowColor = 'rgba(0,0,0,.85)'; b.shadowBlur = w * 0.05; b.shadowOffsetY = w * 0.025; b.fillStyle = '#18161a'; b.beginPath(); b.arc(c, c, R, 0, TAU); b.fill(); b.restore();
-      b.fillStyle = metal(b, c, [[0, '#6f747d'], [.09, '#eef1f5'], [.2, '#454a52'], [.36, '#b9bec7'], [.5, '#2f3339'], [.66, '#dde1e7'], [.82, '#525761'], [1, '#6f747d']]);
+      b.fillStyle = metal(b, c, [[0, '#6f747d'], [.09, '#eef1f5'], [.2, '#454a52'], [.36, '#b9bec7'], [.5, '#5e6267'], [.66, '#dde1e7'], [.82, '#525761'], [1, '#6f747d']]);
       b.beginPath(); b.arc(c, c, R, 0, TAU); b.fill();
       const bev = b.createRadialGradient(c, c, rB, c, c, R); bev.addColorStop(0, 'rgba(0,0,0,.35)'); bev.addColorStop(.15, 'rgba(0,0,0,0)'); bev.addColorStop(.85, 'rgba(255,255,255,.12)'); bev.addColorStop(1, 'rgba(0,0,0,.5)');
       b.fillStyle = bev; b.beginPath(); b.arc(c, c, R, 0, TAU); b.fill();
@@ -57,10 +57,6 @@ export function Wheel({ p, spin, onSettled, onTick }: Props) {
         ctx.fillStyle = '#4e3a10'; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
         ctx.fillStyle = '#e9cd80'; ctx.beginPath(); ctx.arc(x - r * .15, y - r * .15, r * .65, 0, TAU); ctx.fill();
       }
-      const hg = ctx.createRadialGradient(c - hub * .3, c - hub * .3, hub * .1, c, c, hub); hg.addColorStop(0, '#f3f5f8'); hg.addColorStop(.5, '#7b808a'); hg.addColorStop(1, '#25282d');
-      ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(c, c, hub, 0, TAU); ctx.fill(); ctx.strokeStyle = '#050506'; ctx.lineWidth = w * 0.006; ctx.stroke();
-      ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = w * 0.003; ctx.beginPath(); ctx.arc(c, c, hub * .62, 0, TAU); ctx.stroke();
-      for (let i = 0; i < 6; i++) { const a = th + (i / 6) * TAU; ctx.fillStyle = '#20232a'; ctx.beginPath(); ctx.arc(c + Math.cos(a) * hub * .8, c + Math.sin(a) * hub * .8, w * 0.0045, 0, TAU); ctx.fill(); }
     };
     const draw = (now: number) => {
       const w = el.width; if (!w) return; const { c, R, rF } = geo(w);
@@ -71,6 +67,11 @@ export function Wheel({ p, spin, onSettled, onTick }: Props) {
       const d = s.theta - s.prev, n = Math.min(8, Math.max(1, Math.ceil(Math.abs(d) / 0.06)));
       for (let i = 0; i < n; i++) { ctx.globalAlpha = 1 / (i + 1); face(s.theta - (d * i) / n); } // accumulation motion blur
       ctx.restore(); ctx.globalAlpha = 1; ctx.drawImage(front, 0, 0);
+      const { hub } = geo(w);
+const hg = ctx.createRadialGradient(c - hub * .3, c - hub * .3, hub * .1, c, c, hub); hg.addColorStop(0, '#f3f5f8'); hg.addColorStop(.5, '#7b808a'); hg.addColorStop(1, '#25282d');
+ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(c, c, hub, 0, TAU); ctx.fill(); ctx.strokeStyle = '#050506'; ctx.lineWidth = w * 0.006; ctx.stroke();
+ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = w * 0.003; ctx.beginPath(); ctx.arc(c, c, hub * .62, 0, TAU); ctx.stroke();
+if (Math.abs(s.theta - s.prev) < 0.12) for (let i = 0; i < 6; i++) { const a = s.theta + (i / 6) * TAU; ctx.fillStyle = '#20232a'; ctx.beginPath(); ctx.arc(c + Math.cos(a) * hub * .8, c + Math.sin(a) * hub * .8, w * 0.0045, 0, TAU); ctx.fill(); }
       const px = c, py = c - R - w * 0.012, tip = R - rF + w * 0.115, ang = -s.dir * s.flap * 0.4; // spring flapper flexes on each peg
       ctx.save(); ctx.translate(px, py); ctx.rotate(ang); ctx.shadowColor = 'rgba(0,0,0,.75)'; ctx.shadowBlur = w * 0.02; ctx.shadowOffsetY = w * 0.012;
       const pg = ctx.createLinearGradient(-w * .03, 0, w * .03, 0); pg.addColorStop(0, '#7d5f22'); pg.addColorStop(.5, '#f5de98'); pg.addColorStop(1, '#6f531c');

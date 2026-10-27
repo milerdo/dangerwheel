@@ -82,9 +82,9 @@ export function App({ initial }: { initial?: Run }) {
       <header>
         <h1>{logoOk ? <img className="logo" src={`${import.meta.env.BASE_URL}${CONFIG.logo}`} alt={CONFIG.title} onError={() => setLogoOk(false)} /> : CONFIG.title}</h1>
         <div className="tools">
-          <span className="bal" aria-label={`Balance ${money(balance)}`}>{money(balance)}</span>
           <button className="icon" aria-label={muted ? 'Turn sound on' : 'Turn sound off'} aria-pressed={!muted} onClick={() => setMuted((m) => !m)}>{muted ? <SoundOff /> : <SoundOn />}</button>
           <button className="icon text" ref={helpBtn} aria-haspopup="dialog" onClick={() => setHelp(true)}>Help</button>
+          <span className="bal" aria-label={`Balance ${money(balance)}`}>{money(balance)}</span>
         </div>
       </header>
 
@@ -112,10 +112,9 @@ export function App({ initial }: { initial?: Run }) {
           </>
         )}
         {finished && (
-          <div className={`panel result ${phase}`} role="status">
-            <h2>{phase === 'failed' ? 'LOST' : run.cleared === LADDER.length ? 'WON' : 'CASHED OUT'}</h2>
-            <p className="amt">{money(phase === 'failed' ? run.forfeited : run.secured)}</p>
-            {phase === 'failed' && run.secured > 0 && <p className="note">Your secured {money(run.secured)} is safe.</p>}
+            <div className={`panel result ${phase}`} role="status">
+            <h2>{phase === 'failed' ? 'GAME OVER' : run.cleared === LADDER.length ? 'WON' : 'CASHED OUT'}</h2>
+            <p className="amt">{money(run.secured)} <span>collected</span></p>
             <button className="primary" onClick={playAgain} autoFocus>Play Again</button>
           </div>
         )}
