@@ -1,3 +1,4 @@
+Game by Milutin Erdevicki @2026
 # Danger Wheel (prototype)
 
 Spin a wheel of green (safe) and red (danger) sectors. Each survived stage raises your multiplier and the red grows.
