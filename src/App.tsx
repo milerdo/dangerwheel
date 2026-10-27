@@ -133,11 +133,10 @@ export function App({ initial }: { initial?: Run }) {
             <h2 id="help-title">How to play</h2>
             <p className="lede">{CONFIG.tagline}</p>
             <dl>
-              <dt>The wheel</dt><dd>Each spin lands on green or red. Green is safe: you survive and your multiplier grows. The share of green is your chance of surviving.</dd>
-              <dt>Rising danger</dt><dd>Red starts at {CONFIG.odds.failurePercent[0]}% in round 1 and grows every round until it reaches {CONFIG.odds.plateauFailurePercent}/{100 - CONFIG.odds.plateauFailurePercent}.</dd>
-              <dt>A failed spin</dt><dd>You lose the money still in play. Anything you already cashed out is yours to keep.</dd>
-              <dt>Cashing out</dt><dd>After a safe spin, Cash Out collects everything in play. Cash out part secures some and keeps the rest spinning.</dd>
-              <dt>Maximum payout</dt><dd>{CONFIG.maxMultiplier.toLocaleString('en-US')}× your stake in total, cashed-out money included. Reaching it pays out automatically.</dd>
+              <dt>The wheel</dt><dd>Green means survive. Red means lose. Each successful spin increases your multiplier.</dd>
+              <dt>Rising danger</dt><dd>Red starts at {CONFIG.odds.failurePercent[0]}% and increases each round, up to {CONFIG.odds.plateauFailurePercent}%.</dd>
+              <dt>Cash out or Spin again</dt><dd>Cash out to secure your winnings. You can also cash out part and keep the rest in play.</dd>
+              <dt>Maximum payout</dt><dd>{CONFIG.maxMultiplier.toLocaleString('en-US')}× your original stake per bet, including previous cash-outs.</dd>
             </dl>
             <p className="fine">Play-money prototype. Not certified and not for real-money use.</p>
             <button className="primary" onClick={closeHelp} autoFocus>Got it</button>
