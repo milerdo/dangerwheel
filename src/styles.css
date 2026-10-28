@@ -1,7 +1,7 @@
 :root{--ink:#0c0b0e;--panel:#17141b;--line:#2c2733;--brass:#c9a45c;--bone:#efe8d8;--mute:#9a93a3;--safe:#1fbf6a;--danger:#ff6b75;
  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 *{box-sizing:border-box}
-html,body{margin:0;background:radial-gradient(120% 80% at 50% 0%,#201a25 0%,var(--ink) 60%) fixed;color:var(--bone);font-family:var(--sans);overscroll-behavior:none}
+html,body{margin:0;background:radial-gradient(ellipse at 50% 45%,transparent 50%,rgba(0,0,0,.5) 100%),radial-gradient(55% 40% at 50% 42%,rgba(201,164,92,.13),transparent 70%),repeating-conic-gradient(from 0deg at 50% 42%,rgba(255,255,255,.028) 0 5deg,transparent 5deg 10deg),radial-gradient(120% 80% at 50% 0%,#201a25 0%,var(--ink) 60%) fixed;color:var(--bone);font-family:var(--sans);overscroll-behavior:none}
 .app{max-width:640px;margin:0 auto;height:100vh;height:100dvh;min-height:540px;padding:max(8px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px}
 header{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
 h1{font:600 clamp(18px,5.6vw,30px)/1.1 var(--serif);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}

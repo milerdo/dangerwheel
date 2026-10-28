@@ -27,6 +27,12 @@ export function outcomeAt(theta: number, p: number, n: number = CONFIG.visual.se
   const seg = TAU / n;
   return mod(pointerPhi(theta), seg) < p * seg ? 'win' : 'loss';
 }
+/** When the green share changes (pOld -> pNew), rotate the wheel so the pointer's nearer green edge keeps its distance.
+ *  The pointer stays inside green and the extra red appears on the far side of it. Call once per animation frame. */
+export function anchoredTheta(theta: number, pOld: number, pNew: number, n: number = CONFIG.visual.segments): number {
+  const seg = TAU / n, phi = mod(pointerPhi(theta), seg), g = pOld * seg;
+  return phi < g && phi >= g / 2 ? theta + (pOld - pNew) * seg : theta;
+}
 const thetaFor = (phi: number, min: number) => { const t = -Math.PI / 2 - phi; return t + TAU * Math.ceil((min - t) / TAU); };
 
 /** Presentation only: `rng` must be separate from the game RNG. The outcome is already decided. */

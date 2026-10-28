@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { CONFIG } from '../config';
-import { angleAt, arcs, makeSpinPlan, TAU, type Outcome, type SpinPlan } from '../game/spinPlan';
+import { angleAt, anchoredTheta, arcs, makeSpinPlan, TAU, type Outcome, type SpinPlan } from '../game/spinPlan';
 import { flapAt, pegModel, pegsCrossed, planSpin, type PegModel } from '../game/physics';
 
 export interface SpinRequest { id: number; outcome: Outcome }
@@ -89,7 +89,7 @@ if (Math.abs(s.theta - s.prev) < 0.12) for (let i = 0; i < 6; i++) { const a = s
         const t = now - s.t0;
         if (t >= s.plan.total) { s.theta = s.plan.finalTheta; s.plan = null; s.glow = { win: s.out === 'win', t0: now }; cbs.current.onSettled(s.id); }
         else { s.theta = angleAt(s.plan, t); more = true; if (pegsCrossed(s.model, s.prev, s.theta)) cbs.current.onTick(); }
-      } else if (Math.abs(s.p - s.target) > 1e-4) { s.p += (s.target - s.p) * 0.16; more = true; } else s.p = s.target;
+     } else if (Math.abs(s.p - s.target) > 1e-4) { const was = s.p; s.p += (s.target - s.p) * 0.16; s.theta = anchoredTheta(s.theta, was, s.p); more = true; } else s.p = s.target;
       model();
       if (Math.abs(s.theta - s.prev) > 1e-5) s.dir = Math.sign(s.theta - s.prev);
       s.flap += ((s.plan ? flapAt(s.model, s.theta) : 0) - s.flap) * 0.6; if (s.flap > 0.01) more = true;
