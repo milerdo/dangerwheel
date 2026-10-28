@@ -5,7 +5,7 @@ html,body{margin:0;background:radial-gradient(ellipse at 50% 45%,transparent 50%
 .app{max-width:640px;margin:0 auto;height:100vh;height:100dvh;min-height:540px;padding:max(8px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px}
 header{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
 h1{font:600 clamp(18px,5.6vw,30px)/1.1 var(--serif);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.logo{display:block;height:clamp(28px,8vw,40px);width:auto;max-width:100%}
+.logo{display:block;height:clamp(40px,11vw,56px);width:auto;max-width:100%;object-fit:contain}
 .tools{display:flex;align-items:center;gap:8px;flex:none}
 .bal{font:600 15px var(--sans);font-variant-numeric:tabular-nums;color:var(--bone);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:10px 14px;white-space:nowrap}
 .icon{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#1d1923;display:grid;place-items:center;font:600 18px var(--serif);padding:0}
