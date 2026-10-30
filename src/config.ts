@@ -16,5 +16,6 @@ export const CONFIG = {
   },
   // Wheel physics: bump = peg/flapper barrier energy, k = viscous drag, c = dry friction, launch = flick torque range
   physics: { bump: 0.72, k: 1.6, c: 0.4, windup: 6, launchMin: 110, launchMax: 150 },
+  flick: { enabled: true, minAngle: 0.25, minSpeed: 5, maxSpeed: 18 },
   visual: { segments: 1, pegs: 24 } // segments: 1 = one continuous green arc + one red arc; 2+ repeats the pattern,
 } as const;

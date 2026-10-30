@@ -31,15 +31,19 @@ export function flapAt(m: PegModel, th: number): number {
 export function pegsCrossed(m: PegModel, a: number, b: number): number {
   let n = 0; for (const g of m.pegs) { const d0 = wrap(g.phi - phiAt(a)), d1 = wrap(g.phi - phiAt(b)); if (d0 * d1 < 0 && Math.abs(d0 - d1) < 1) n++; } return n;
 }
+/** Pegs the pointer passed between two wheel angles, in no particular order (for tick sounds and the arm). */
+export function pegHits(m: PegModel, a: number, b: number): Peg[] {
+  const out: Peg[] = []; for (const g of m.pegs) { const d0 = wrap(g.phi - phiAt(a)), d1 = wrap(g.phi - phiAt(b)); if (d0 * d1 < 0 && Math.abs(d0 - d1) < 1) out.push(g); } return out;
+}
 const nearMajor = (m: PegModel, th: number) => Math.min(...m.pegs.filter((g) => g.major).map((g) => Math.abs(wrap(g.phi - phiAt(th)))));
 const BUF = new Float64Array(MAXN);
 
-export function sim(m: PegModel, th0: number, A: number) {
-  let th = th0, w = 0, rest = 0, rev = 0, last = 0;
+export function sim(m: PegModel, th0: number, A: number, off = 0, dir = 1, w0 = 0) {
+  let th = th0, w = w0, rest = 0, rev = 0, last = 0;
   const K = (PH.bump * Math.PI) / (2 * m.h);
   for (let i = 0; i < 5100; i++) {
-    const t = i * DT; BUF[i] = th;
-    let F = -PH.k * w + (t < 0.26 ? -PH.windup * Math.sin((Math.PI * t) / 0.26) : t < 0.68 ? A * Math.sin((Math.PI * (t - 0.26)) / 0.42) : 0);
+    const t = i * DT + off; BUF[i] = th;
+    let F = -PH.k * w + dir * (t < 0.26 ? -PH.windup * Math.sin((Math.PI * t) / 0.26) : t < 0.68 ? A * Math.sin((Math.PI * (t - 0.26)) / 0.42) : 0);
     const fp = phiAt(th);
     for (const g of m.bins[Math.floor((((fp % TAU) + TAU) % TAU) / TAU * NB) % NB]) { const d = wrap(g.phi - fp); if (d > -m.h && d < m.h) F += K * Math.sin((Math.PI * d) / m.h); }
     if (w === 0) {
@@ -52,11 +56,13 @@ export function sim(m: PegModel, th0: number, A: number) {
   return null;
 }
 
-export function planSpin(p: number, outcome: Outcome, th0: number, rng: () => number = Math.random): SpinPlan {
+export function planSpin(p: number, outcome: Outcome, th0: number, rng: () => number = Math.random, o?: { strength: number; skip: boolean; dir?: 1 | -1; speed?: number }): SpinPlan {
   const m = pegModel(p), want = rng() < CONFIG.spin.teaseChance;
   for (let tries = 0; tries < 400; tries++) {
-    const r = sim(m, th0, PH.launchMin + (PH.launchMax - PH.launchMin) * rng());
-    if (!r || r.n < 3300 || r.n > 5000) continue;
+    const off = o?.skip ? 0.26 : 0, frac = o && tries < 200 ? Math.min(1, Math.max(0, 0.15 + 0.7 * o.strength + (rng() - 0.5) * 0.3)) : rng();
+    const dir = o?.dir ?? 1, w0 = o?.skip ? dir * Math.min(o.speed ?? 0, 30) : 0, A0 = PH.launchMin + (PH.launchMax - PH.launchMin) * frac;
+    const r = sim(m, th0, o?.skip ? Math.max(0, A0 - Math.abs(w0) / 0.267) : A0, off, dir, w0); // the finger's speed carries on; the launch only adds what is missing
+    if (!r || r.n < 3300 - off * 1000 || r.n > 5000 - off * 1000) continue;
     const th = BUF[r.n - 1]; if (outcomeAt(th, p) !== outcome) continue;
     const drama = r.rev > 0 || nearMajor(m, th) < 1.25 * m.h;
     if ((want ? tries < 300 : tries < 350) && drama !== want) continue;
