@@ -1,4 +1,16 @@
-Game by Milutin Erdevicki @2026
+## Copyright and Proprietary Rights
+
+Copyright © 2026 Milutin Erdevicki. All rights reserved.
+
+This repository contains proprietary software and original creative materials developed for the Danger Wheel project.
+
+Unless expressly authorized in writing by the copyright holder, no permission is granted to copy, reproduce, redistribute, modify, commercially exploit, or create derivative works from this project's original source code, visual assets, animations, game presentation, or documentation.
+
+No license to use this software or its associated materials is granted by making this repository publicly accessible.
+
+Third-party libraries, assets, and dependencies remain subject to their respective licenses and ownership rights.
+
+For licensing, commercial use, or other permissions, contact the copyright holder.
 # Danger Wheel (prototype)
 
 Spin a wheel of green (safe) and red (danger) sectors. Each survived stage raises your multiplier and the red grows.

@@ -1,3 +1,11 @@
+/**
+ * Copyright © 2026 Milutin Erdevicki.
+ * All rights reserved.
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, modification, distribution,
+ * or commercial use is prohibited.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { CONFIG } from './config';
 import { LADDER } from './game/math';
@@ -188,11 +196,11 @@ export function App({ initial }: { initial?: Run }) {
      {intro && ready && (
         <div className="backdrop" onClick={dismissIntro}>
           <div className="modal" role="dialog" aria-modal="true" aria-labelledby="intro-title" onClick={(e) => e.stopPropagation()}>
-            <h2 id="intro-title">Welcome</h2>
+            <h2 id="intro-title">Welcome to Danger Wheel</h2>
             <dl>
-              <dt>Spin</dt><dd>Place your bet, then use the button, press Space, or {touch ? 'flick' : 'drag and flick'} the wheel itself, in either direction.</dd>
-              <dt>Adjust</dt><dd>Drag the wheel to turn it before you spin. Let go slowly and it stays where you put it.</dd>
-              <dt>Decide</dt><dd>After each safe spin, cash out all or part, or keep going. Red ends the run, and anything you already cashed out is safe.</dd>
+              <dt>Spin</dt><dd>Choose your stake and press <strong>Place Bet</strong> to spin the wheel.</dd>
+              <dt>Decide</dt><dd>After each winning spin, cash out all or part, or keep going. Landing on red ends the run.</dd>
+              <dt>Controls</dt><dd>Drag the wheel to adjust it before you spin. Press Space or {touch ? 'flick' : 'drag and flick'} the wheel to bet.</dd>
             </dl>
             <button className="primary" onClick={dismissIntro} autoFocus>Let's go</button>
           </div>
